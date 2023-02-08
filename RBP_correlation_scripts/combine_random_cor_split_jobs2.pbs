@@ -1,0 +1,38 @@
+
+# processors on 1 node
+#PBS -l nodes=1:ppn=2
+
+#Request walltime/fastq file ~30 min/sample
+#PBS -l walltime=240:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=20gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+#PBS -N DGCR8_test 
+
+module load R/3.5
+cd /scratch/$PBS_JOBID
+
+FILE_i=${RBP}
+echo $FILE_i
+touch ${FILE_i}_corComplete_subset.txt
+path_start=/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/CompletedCors/csf/${FILE_i}_corComplete_subset
+gunzip breaks_E/CSF/${FILE_i}_breaks.txt.gz
+sed '1,2d' breaks_E/CSF/${FILE_i}_breaks.txt | while read d start stop
+do
+ test="${FILE_i}_${start}.txt.gz"
+ echo $test
+ gunzip ${path_start}${start}.txt.gz
+ sed '1d' ${path_start}${start}.txt > tmp
+ cat tmp >> ${FILE_i}_corComplete_subset.txt
+ rm tmp
+done
+gzip breaks_E/CSF/${FILE_i}_breaks.txt
+sort ${FILE_i}_corComplete_subset.txt | uniq > tmp && mv tmp ${FILE_i}_corComplete_subset.txt
+head -n1 CompletedCors/csf/${FILE_i}_corComplete_subset2.txt | cat - ${FILE_i}_corComplete_subset.txt > tmp && mv tmp ${FILE_i}_corComplete_subset.txt
+mv ${FILE_i}_corComplete_subset.txt CompletedCors/csf/${FILE_i}_corComplete_subset.txt
+

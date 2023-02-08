@@ -1,0 +1,27 @@
+
+# processors on 1 node
+#PBS -l nodes=1:ppn=1
+
+#Request walltime/fastq file ~30 min/sample
+#PBS -l walltime=00:20:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=8gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+
+module load R/3.5
+cd /scratch/$PBS_JOBID
+
+#cp /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/PHT_summed_filtered.tar.gz /scratch/$PBS_JOBID
+
+#tar -xzvf PHT_summed_filtered.tar.gz
+#rm PHT_summed_filtered.tar.gz
+
+Rscript --vanilla /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_KS_values_subset.R ${RBP} ${SET} ${BIO} ${Cor}
+#Rscript --vanilla /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_KS_values_subset.R "DGCR8"
+
+#rm PHT_summed_filtered.txt

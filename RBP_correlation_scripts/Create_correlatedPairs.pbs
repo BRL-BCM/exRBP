@@ -1,0 +1,28 @@
+# processors on 1 node
+#PBS -l nodes=1:ppn=1
+
+#Request walltime/fastq file ~30 min/sample
+#PBS -l walltime=240:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=16gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+#PBS -N DGCR8_test 
+
+module load R/3.5
+cd /scratch/$PBS_JOBID
+
+cp /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/CSF_healthy_filtered.tar.gz /scratch/$PBS_JOBID
+tar -xzvf CSF_healthy_filtered.tar.gz
+rm CSF_healthy_filtered.tar.gz
+
+#cp /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/cellLine_all_filtered.tar.gz /scratch/$PBS_JOBID
+#tar -xzvf cellLine_all_filtered.tar.gz
+#rm cellLine_all_filtered.tar.gz
+
+Rscript --vanilla /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/test_Create_withinRBP_correlatedPairs.R ${RBP}
+#Rscript --vanilla /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_random_correlatedPairs.R "DGCR8"

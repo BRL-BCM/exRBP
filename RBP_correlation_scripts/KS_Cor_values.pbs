@@ -1,0 +1,20 @@
+
+# processors on 1 node
+#PBS -l nodes=1:ppn=1
+
+#Request walltime/fastq file ~30 min/sample
+#PBS -l walltime=2:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=16gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+
+module load R/3.5
+cd /scratch/$PBS_JOBID
+
+Rscript --vanilla /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/KS_across_cor_fullRBP.R
+

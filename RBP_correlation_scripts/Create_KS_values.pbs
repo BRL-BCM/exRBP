@@ -1,0 +1,32 @@
+
+# processors on 1 node
+#PBS -l nodes=1:ppn=2
+
+#Request walltime/fastq file ~30 min/sample
+#PBS -l walltime=12:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=10gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+
+module load R/3.5
+cd /scratch/$PBS_JOBID
+
+#cp /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/CellLines_summed_filtered.tar.gz /scratch/$PBS_JOBID
+#tar -xzvf CellLines_summed_filtered.tar.gz
+#rm CellLines_summed_filtered.tar.gz
+
+#cp /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/CSF_all_filtered.tar.gz /scratch/$PBS_JOBID
+#tar -xzvf CSF_all_filtered.tar.gz
+#rm CSF_all_filtered.tar.gz
+
+cp /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/CSF_healthy_filtered.tar.gz /scratch/$PBS_JOBID
+tar -xzvf CSF_healthy_filtered.tar.gz
+rm CSF_healthy_filtered.tar.gz
+
+Rscript --vanilla /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_KS_values.R ${RBP}
+#Rscript --vanilla /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_KS_values.R "DGCR8"
