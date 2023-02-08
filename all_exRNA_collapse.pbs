@@ -1,0 +1,25 @@
+# processors on 1 node
+#PBS -l nodes=1:ppn=1 
+
+#Request walltime/fastq file ~15 min/sample
+#PBS -l walltime=72:00:00
+
+#The larger studies should probably request 40 gb
+#PBS -l mem=40gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+
+cd /scratch/$PBS_JOBID
+module load R/3.5
+
+cp /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/study_exRNA_coverage/${study}_intersect.bed.tgz /scratch/$PBS_JOBID
+tar -xzvf ${study}_intersect.bed.tgz
+
+Rscript /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/collapse_exRNA_coverage.R ${cov}
+
+mv out.txt ${study}_coverage_${cov}.bedgraph
+mv ${study}_coverage_${cov}.bedgraph /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/study_exRNA_coverage/${study}_coverage_${cov}.bedgraph
+

@@ -1,0 +1,19 @@
+# processors on 1 node
+#PBS -l nodes=1:ppn=2 
+
+#Request walltime/fastq file ~15 min/sample
+#PBS -l walltime=240:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=40gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+
+
+cd /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/
+
+bash create_study_matrix_sum.sh "${study}"
+

@@ -1,0 +1,41 @@
+# processors on 1 node
+#PBS -l nodes=1:ppn=1 
+
+#Request walltime/fastq file ~15 min/sample
+#PBS -l walltime=5:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=16gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+#PBS -N unionBG_all
+
+module load BEDTools/2.17
+cd /scratch/$PBS_JOBID
+echo $PBS_NODEFILE
+
+#find /mnt/brlstor/Vol6_SP/exrna/readCoverage/EXR*/EX* -type f -name '*_genome_Aligned.bedgraph.xz' -exec cp -rfp {} /scratch/$PBS_JOBID \;
+#find /mnt/brlstor/Vol6_SP/exrna/readCoverage/EXR*/EX* -type f -name '*_genome_Aligned.bedgraph.xz' | xargs cp -t /scratch/$PBS_JOBID
+find /mnt/brlstor/Vol6_SP/exrna/readCoverage/${study}/EX* -type f -name '*_genome_Aligned.bedgraph.xz' | xargs cp -t /scratch/$PBS_JOBID
+xz -d *.xz
+
+#locations=$(find . -type f -name '*_genome_Aligned.bedgraph.xz' | sort | head | sed -e 's/\n/\t/g')
+#names=$(ls -lR */*_genome_Aligned.bedgraph.xz | sort | head | awk -F_endogenousAlignments_genome_Aligned.bedgraph.xz '{print $1}' )
+
+ls -l *bedgraph | wc -l
+ls | head 
+
+locations=$(find . -type f -name '*_genome_Aligned.bedgraph' | sort |sed -e 's/\n/\t/g')
+echo $locations
+names=$(ls *_genome_Aligned.bedgraph | sort | awk -F_endogenousAlignments_genome_Aligned.bedgraph '{print $1}' )
+echo $names
+bedtools unionbedg -i $locations -header -names $names > ${study}_intersect.bed
+
+wc -l ${study}_intersect.bed
+
+tar -czvf ${study}_intersect.bed.tgz ${study}_intersect.bed
+mv ${study}_intersect.bed.tgz /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest
+

@@ -1,0 +1,50 @@
+# processors on 1 node
+#PBS -l nodes=1:ppn=6
+
+#Request walltime/fastq file ~30 min/sample
+#PBS -l walltime=96:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=16gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+
+module load R/3.5
+
+#mkdir /scratch/$PBS_JOBID/
+
+#STUDY_LOC="/mnt/brlstor/Vol6_SP/exrna/readCoverage/EXR-DGALA1QDi9GG-AN/RBP_intersects/biosample_RBP/"
+STUDY_LOC="/mnt/brlstor/Vol6_SP/exrna/readCoverage/${study}/RBP_intersects/biosample_RBP/"
+
+cd $STUDY_LOC
+
+for biosample in *.xz
+do
+ #If file study doesn't have any biosamples skip it
+ [ -f "$biosample" ] || break
+ #The name comes with the path attached so create the prefix which is just the biosample name
+ PREFIX_i=$(basename $biosample)
+ echo ${PREFIX_i}
+ SHORT=${PREFIX_i%.*}
+
+ #unzip
+ xz -k -d $biosample
+
+ mv $SHORT /scratch/$PBS_JOBID
+done
+
+cd /scratch/$PBS_JOBID/
+
+Rscript /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/study_calc_loci.R
+
+#mv Loci_in_study.txt /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/loci_present_out/Loci_in_EXR-DGALA1QDi9GG-AN.txt
+mv Loci_in_study.txt /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/loci_present_out/Loci_in_${study}.txt
+
+
+
+
+
+

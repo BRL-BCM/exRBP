@@ -1,0 +1,44 @@
+# processors on 1 node
+#PBS -l nodes=1:ppn=2
+
+#Request walltime/fastq file ~30 min/sample
+#PBS -l walltime=120:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=40gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+
+
+mkdir /scratch/$PBS_JOBID
+cd /scratch/$PBS_JOBID
+
+tar -xzvf /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/${study}/${study}.tar.gz
+
+awk -v OFS="\t" '
+   NR==1{
+      for ( i=2; i<=NF; i++ )
+       if ( $i ~ /EXR.LLAUR1NPNORNEBS001.BS|EXR.LLAUR1NPNORNEBS002.BS|EXR.LLAUR1NPNORNEBS003.BS|EXR.LLAUR1NPNORNEBS004.BS|EXR.LLAUR1NPNORNEBS005.BS|EXR.LLAUR1NPNORNEBS006.BS|EXR.LLAUR1NPNORNEBS007.BS|EXR.LLAUR1NPNORNEBS008.BS|EXR.LLAUR1NPNORNEBS009.BS|EXR.LLAUR1NPNORNEBS010.BS|EXR.LLAUR1NPNORNEBS011.BS|EXR.LLAUR1NPNORNEBS012.BS|EXR.LLAUR1NPNORNEBS013.BS|EXR.LLAUR1NPNORNEBS014.BS|EXR.LLAUR1NPNORNEBS015.BS|EXR.LLAUR1NPNORNEBS016.BS|EXR.LLAUR1NPNORNEBS017.BS|EXR.LLAUR1NPNORNEBS018.BS|EXR.LLAUR1NPNORNEBS019.BS|EXR.LLAUR1NPNORNEBS020.BS|/ )
+       str = str OFS i
+       N = split(str, A, OFS)
+   }{
+      s = $1
+      r = $2
+      p = $3
+      s = s OFS r
+      s = s OFS p
+      for ( i=2; i<=N; i++ )
+         s = s OFS $(A[i])
+      $0 = s
+   }1
+' ${study}.txt > ${study}_serum_healthy.txt
+
+tar -czvf ${study}_serum_healthy.tar.gz ${study}_serum_healthy.txt
+
+mv ${study}_serum_healthy.tar.gz /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/${study}/${study}_serum_healthy.tar.gz
+
+rm *.txt
+

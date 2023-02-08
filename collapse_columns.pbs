@@ -1,0 +1,84 @@
+# processors on 1 node
+#PBS -l nodes=1:ppn=3
+
+#Request walltime/fastq file ~30 min/sample
+#PBS -l walltime=240:00:00
+
+#Request 1 gigabyte of memory per process
+#PBS -l mem=16gb
+
+#Request that regular output and terminal output go to the same file
+#PBS -j oe
+#PBS -M Emily.Laplante@bcm.edu
+#PBS -m abe
+#PBS -N Collapse_cellLines
+
+#mkdir /scratch/$PBS_JOBID
+cd /scratch/$PBS_JOBID
+
+cp /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/cellLines_all_samples_filtered.tar.gz /scratch/$PBS_JOBID
+
+tar -xzvf cellLines_all_samples_filtered.tar.gz
+rm *.tar.gz
+
+sed 's/ /\t/g' cellLines_all_samples_filtered.txt > intermediate.txt
+mv intermediate.txt cellLines_all_samples_filtered.txt
+
+#remove first 3 rows
+cut -d$'\t' -f 4- cellLines_all_samples_filtered.txt > noRowNames.txt
+cut -d$'\t' -f 1-3 cellLines_all_samples_filtered.txt > rownames.txt
+rm cellLines_all_samples_filtered.txt
+
+echo -n "" > names.txt
+
+for i in {0..76}; do #Should be 0 to 1 less than total number of samples
+  let start=i*150+1
+  let end=i*150+150
+  echo "${start} ${end}"
+  cut -d$'\t' -f ${start}-${end} noRowNames.txt >${i}_sep.txt
+  
+  sample_name=$(head -n 1 ${i}_sep.txt | sed 's/_RBP.*//g')
+  echo ${sample_name}
+  
+  awk '{c=0;for(i=1;i<=NF;++i){c+=$i};print c}' ${i}_sep.txt > sample_total.txt
+  if [ $sample_name == "EXR-AKRIC1AKGBM001-BS" ]; then
+   #echo "equal"
+   mv sample_total.txt study_total.txt
+  else
+   #echo "Not"
+   paste study_total.txt sample_total.txt > study_total_temp.txt
+   mv study_total_temp.txt study_total.txt
+   rm sample_total.txt
+  fi
+  echo $sample_name >> names.txt
+  rm ${i}_sep.txt
+done
+
+rm noRowNames.txt
+
+NAMES_USE=$(sed 's/\n/ /g' names.txt)
+echo $NAMES_USE | cat - study_total.txt > study_total_temp.txt && mv study_total_temp.txt study_total.txt
+#concatenate columns 1-3
+paste -d "\t" rownames.txt study_total.txt | sed 's/ /\t/g' > cellLines_all_summed_filtered.txt
+
+##for some reason the first row is all zeros and there is one more row than rowname - so remove extra first line and correctly align regions
+head -1 cellLines_all_summed_filtered.txt >names_use.txt
+awk NR\>1 cellLines_all_summed_filtered.txt > test_rl_noname.txt
+cut -d$'\t' -f 4- test_rl_noname.txt | sed '$d' | awk NR\>1 > test_rl_noRowNames.txt
+cut -d$'\t' -f 1-3 test_rl_noname.txt | sed '$d' > test_rl_rownames.txt
+tail -1 cellLines_all_summed_filtered.txt | tail -c +2 > test_lastLine.txt
+
+cat test_rl_noRowNames.txt test_lastLine.txt > total_read.txt
+paste test_rl_rownames.txt total_read.txt | sed 's/ /\t/g' > total_fixed_values.txt
+cat names_use.txt total_fixed_values.txt > total_mat.txt
+mv total_mat.txt cellLines_all_summed_filtered.txt
+
+
+rm study_total.txt
+
+tar -czvf cellLines_all_summed_filtered.tar.gz cellLines_all_summed_filtered.txt
+
+mv cellLines_all_summed_filtered.tar.gz /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample_RBP_out_unzipped/
+
+
+
