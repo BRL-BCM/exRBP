@@ -1,3 +1,11 @@
+#This README was designed for associated scripts running on the Bioinformatics Research Lab cluster at Baylor College of Medicine
+#You will need to have relevant dependencies installed such as bedtools as well as adjust the pbs scripts for the cluster deployment you wish to use these scripts for.
+
+#Scripts specifically pertaining to the statistical testing of RBP presence in biofluids is in the RBP_correlation_scripts subdirectory. All other scripts are in the parent directory. 
+
+
+
+
 #Counting genes will use the hg19 gtf file and information in
 #Biotype calculations for the waffle plot figures also use this information
 /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/Cell_line_all/Intersect_with_RefSeq
