@@ -1,0 +1,37 @@
+BEGIN by taking all RBP loci and combining them to one matrix
+
+Filter out regions present in multiple RBP
+	/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/Cell_line_all/RBP_loci_each/run_subset.pbs which runs subset_RBP.R
+
+Take your loci by biosample matrix and break it into 151 RBP specific matrixes with loci for that RBP only present
+	Now launched like this
+	UPDATE the output folder of Create_sample_RBP_matrixes.R
+	qsub -v type=cellLine,status=all -N Create_cell_RBP Launch_separate_RBP.pbs
+	Still have to update the output folder of Create_sample_RBP_matrixes.R
+		/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Launch_separate_RBP.pbs #Launches R script
+		/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_sample_RBP_matrixes.R
+####YOU MUST CHECK THE NUMBER OF SAMPLES (In .o file) FOR EACH BIOFLUID SAMPLES MATRIX AGAINST EXPECTED NUMBERS###
+#Occasionally the script adds an extra tab between studies so you end up with an extra column or two. If this happens you'll have to adjust the column names in the orinal file in /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/biosample...
+
+Perform pairwise correlation for all loci present in an RBP and select a random loci with similar coverage for comparison
+    /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Launch_new_cors.R #An R script driver that launches a job for each RBP
+    /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_correlatedPairs.pbs #The job script which launches the analysis R script
+    /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/test_Create_withinRBP_correlatedPairs.R #The R script where actual analysis happens
+
+Perform the correlations with the random loci for all pairs
+	/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Launch_random_cor.R
+	/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_random_correlatedPairs.pbs
+	/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_random_correlatedPairs.R
+To speed up, run regions in parallel by launching multiple jobs. Use these instead
+	First generate the numbers you'll need for the files
+	        /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Launch_random.pbs
+        	/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Create_random_cor_splits.R
+	Then generate the pbs for each of the split files
+        	/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Launch_random_cor_split_jobs.R
+	        /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/random_cor_split_jobs.pbs
+        	/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/random_correlatedPairs.R
+	Then the split rows need to be recombined into a single output table
+        	/mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/Launch_random_cor_collapse.R
+	        /mnt/brlstor/Vol6_SP/exrna/readCoverage/EmilyTest/RBP_correlations/combine_random_cor_split_jobs2.pbs
+        You MUST then go in and manually delete all of the individual runs - please don't clog the cluster/take up space
+  
